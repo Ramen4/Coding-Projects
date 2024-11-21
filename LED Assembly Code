@@ -1,0 +1,67 @@
+# main source file
+
+.org 0x10000000
+
+main:
+lui $a0, 0xf010
+lui $a1, 0xf020
+
+loop:
+lw $t0, 0($a0)
+andi $t0, $t0, 0xFF
+
+li $t1, 1
+beq $t0, $t1, switch0
+
+li $t1, 2
+beq $t0, $t1, switch1
+
+li $t1, 4
+beq $t0, $t1, switch2
+
+bne $t0, $t1, pattern_other
+
+switch0:
+li $t1, 0x0F
+sw $t1, 0($a1)
+jal delay
+li $t1, 0x00
+sw $t1, 0($a1)
+j loop
+
+switch1:
+li $t1, 0xF0
+sw $t1, 0($a1)
+jal delay
+li $t1, 0x00
+sw $t1, 0($a1)
+j loop
+
+switch2:
+li $t1, 0x02
+sw $t1, 0($a1)
+jal delay
+li $t1, 0x08
+sw $t1, 0($a1)
+jal delay
+li $t1, 0x20
+sw $t1, 0($a1)
+jal delay
+li $t1, 0x80
+sw $t1, 0($a1)
+jal delay
+li $t1, 0x00
+sw $t1, 0($a1)
+j loop
+
+pattern_other:
+li $t1, 0x00
+sw $t1, 0($a1)
+j loop
+
+delay:
+li $t2, 0x2FFFF
+delay_loop:
+addiu $t2, $t2, -1
+bne $t2, $zero, delay_loop
+jr $ra
