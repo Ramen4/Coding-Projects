@@ -1,0 +1,115 @@
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#include <cstring>
+
+#define MAX_LEADERS 5
+
+struct Player {
+    char name[50];
+    int guesses;
+};
+
+Player leaders[MAX_LEADERS];
+int numLeaders = 0;
+
+void readLeaders() {
+    std::ifstream file("leaders.txt");
+    if (!file.is_open()) {
+        return;
+    }
+
+    while (file >> leaders[numLeaders].name >> leaders[numLeaders].guesses) {
+        numLeaders++;
+        if (numLeaders >= MAX_LEADERS) {
+            break;
+        }
+    }
+
+    file.close();
+}
+
+void saveLeaders() {
+    std::ofstream file("leaders.txt");
+    if (!file.is_open()) {
+        std::cout << "Error saving leaders to file." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < numLeaders; i++) {
+        file << leaders[i].name << " " << leaders[i].guesses << std::endl;
+    }
+
+    file.close();
+}
+
+void updateLeaders(const Player* player) {
+    if (numLeaders < MAX_LEADERS) {
+        leaders[numLeaders] = *player;
+        numLeaders++;
+    }
+    else {
+        for (int i = 0; i < numLeaders; i++) {
+            if (player->guesses < leaders[i].guesses) {
+                for (int j = MAX_LEADERS - 1; j > i; j--) {
+                    leaders[j] = leaders[j - 1];
+                }
+                leaders[i] = *player;
+                break;
+            }
+        }
+    }
+}
+
+int main() {
+    char input;
+    char playerName[50];
+    double target = 8.06225775;
+    int guess;
+    Player currentPlayer;
+
+    readLeaders();
+
+    std::cout << "Welcome! Press 'q' to quit or any other key to continue:\n";
+    while ((input = getchar()) != 'q') {
+        std::cout << "Please enter your name to start: ";
+        std::cin >> playerName;
+
+        currentPlayer.guesses = 0;
+        while (true) {
+            std::cout << std::fixed << "8.06225775 is the square root of what number? Guess a value between 10 and 100: ";
+            std::cin >> guess;
+
+            currentPlayer.guesses++;
+
+            if (guess < 65) {
+                std::cout << "Too low, guess again: ";
+            }
+            else if (guess > 65) {
+                std::cout << "Too high, guess again: ";
+            }
+            else {
+                std::cout << "You got it, baby!" << std::endl;
+                std::cout << "You made " << currentPlayer.guesses << " guesses." << std::endl;
+
+                strcpy(currentPlayer.name, playerName);
+                updateLeaders(&currentPlayer);
+
+                std::cout << "Here are the current leaders:" << std::endl;
+                for (int i = 0; i < numLeaders; i++) {
+                    std::cout << leaders[i].name << " made " << leaders[i].guesses << " guesses" << std::endl;
+                }
+
+                break;
+            }
+        }
+
+        std::cout << "Press 'q' to quit or any other key to continue:" << std::endl;
+        while (getchar() != '\n');
+    }
+
+    saveLeaders();
+    std::cout << "Bye Bye!" << std::endl;
+
+    return 0;
+}
